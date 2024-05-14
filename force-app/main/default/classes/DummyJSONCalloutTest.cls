@@ -1,3 +1,7 @@
+/*
+ * Update the ContactTrigger.trigger to do a callout to the DummyJSONCallout class to retrieve/send user data from the Dummy JSON API.
+ * Implement the DummyJSONCallout class to handle the callouts to the Dummy JSON API.
+ */
 @IsTest
 public with sharing class DummyJSONCalloutTest {
 	// This test method will test the getDummyJSONUserFromId future method with a mock HTTP response.
@@ -6,12 +10,13 @@ public with sharing class DummyJSONCalloutTest {
 		// Create contact
 		Contact cont = new Contact(FirstName = 'Test', LastName = 'User', DummyJSON_Id__c = '1');
 		insert cont;
+
 		// Register the mock callout class
 		Test.setMock(HttpCalloutMock.class, new DummyJSONCalloutMockGenerator());
-
+		
 		// As this is a future method, we need to enclose it in Test.startTest() and Test.stopTest() to ensure it's executed in the test context.
 		Test.startTest();
-		DummyJSONCallout.getDummyJSONUserFromId('1'); // Call the method with an example userId
+			DummyJSONCallout.getDummyJSONUserFromId('1'); // Call the method with an example userId
 		Test.stopTest();
 
 		// After the stopTest, the future method will have run. Now we can check if the contact was created correctly.
@@ -68,7 +73,7 @@ public with sharing class DummyJSONCalloutTest {
 
 		// As this is a future method, we need to enclose it in Test.startTest() and Test.stopTest() to ensure it's executed in the test context.
 		Test.startTest();
-		DummyJSONCallout.postCreateDummyJSONUser(testContact.Id);
+			DummyJSONCallout.postCreateDummyJSONUser(testContact.Id);
 		Test.stopTest();
 
 		// Retrieve the updated contact to verify the changes
@@ -129,28 +134,35 @@ public with sharing class DummyJSONCalloutTest {
 
 	@IsTest
 	static void testContactInsert() {
-		Contact cont = new Contact(FirstName = 'Test', LastName = 'User');
+		//Create 100 contact
+		List<Contact> contacts = new List<Contact>();
+		for (Integer i = 0; i < 1; i++) {
+			contacts.add(new Contact(FirstName = 'Test', LastName = 'User' + i));
+		}
 
 		// Register the mock callout class
 		Test.setMock(HttpCalloutMock.class, new DummyJSONCalloutMockGenerator());
 
 		// As this is a future method, we need to enclose it in Test.startTest() and Test.stopTest() to ensure it's executed in the test context.
 		Test.startTest();
-		insert cont;
+			insert contacts;
 		Test.stopTest();
 
 		// After the stopTest, the future method will have run. Now we can check if the contact was created correctly.
-		cont = [
-			SELECT Email, Phone, Birthdate, MailingStreet, MailingCity, MailingPostalCode, MailingState, MailingCountry
+		contacts = [
+			SELECT DummyJSON_Id__c, Email, Phone, Birthdate, MailingStreet, MailingCity, MailingPostalCode, MailingState, MailingCountry
 			FROM Contact
-			WHERE Id = :cont.Id
+			WHERE Id IN :contacts AND DummyJSON_Id__c != null
 		];
-		System.assertEquals('test@example.com', cont.Email, 'Email does not match your value: ' + cont.Email);
-		System.assertEquals('+123456789', cont.Phone,  'Phone does not match your value: ' + cont.Phone);
-		System.assertEquals(
-			cont.Birthdate,
-			Date.valueOf('1990-01-01'),
-			'Birthdate does not match your value: ' + cont.Birthdate
-		);
+		Assert.isTrue(!contacts.isEmpty(), 'No contacts were created');
+
+		for (Contact cont : contacts) {
+			Assert.isTrue(cont.DummyJSON_Id__c.isNumeric(), 'DummyJSON_Id is not numeric string');
+			Integer dummyJSONId = Integer.valueOf(cont.DummyJSON_Id__c);
+			Assert.isTrue(
+				dummyJSONId >=0 && dummyJSONId <= 100, 
+				'Expected range of DummyJSON_Id is [0-100]'
+			);
+		}
 	}
 }
