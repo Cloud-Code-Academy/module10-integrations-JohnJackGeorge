@@ -156,6 +156,7 @@ public with sharing class DummyJSONCalloutTest {
 		];
 		Assert.isTrue(!contacts.isEmpty(), 'No contacts were created');
 
+
 		for (Contact cont : contacts) {
 			Assert.isTrue(cont.DummyJSON_Id__c.isNumeric(), 'DummyJSON_Id is not numeric string');
 			Integer dummyJSONId = Integer.valueOf(cont.DummyJSON_Id__c);
