@@ -57,7 +57,8 @@ public with sharing class DummyJSONCallout {
             cont.DummyJSON_Id__c = dummyUserId;
         }
         Schema.SObjectField ftoken = Contact.Fields.DummyJSON_Id__c;
-        Database.upsert(cont, ftoken, AccessLevel.USER_MODE); //insert/update from the JSON response using the external id (dummyUserId)
+        // Database.upsert(cont, ftoken, AccessLevel.USER_MODE); //insert/update from the JSON response using the external id (dummyUserId)
+		Database.upsert(cont, ftoken);
     }
 
     /* 
@@ -143,7 +144,9 @@ public with sharing class DummyJSONCallout {
             // Get the Contact based on the ID provided.
             Contact con = [SELECT Id, DummyJSON_Last_Updated__c FROM Contact WHERE Id = :contactId];
             con.DummyJSON_Last_Updated__c = System.now();
-            Database.update(con, AccessLevel.USER_MODE);
+            // Database.update(con, AccessLevel.USER_MODE);
+			Database.update(con);
+
         }
     }
 
