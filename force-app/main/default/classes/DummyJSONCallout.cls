@@ -21,7 +21,7 @@
  * https://developer.salesforce.com/docs/atlas.en-us.apexref.meta/apexref/apex_classes_restful_http_httprequest.htm
  */
 
- public with sharing class DummyJSONCallout {
+public with sharing class DummyJSONCallout {
 
 	/* 
 	 * Question 1
@@ -35,13 +35,12 @@
      */
 
 	public static void getDummyJSONUserFromId(String dummyUserId) {
-
 		// Create HTTP request to send.
 		HttpRequest request = new HttpRequest();
 		
 		// Set the endpoint URL. Use direct URL or for best practices use Named Credential.
-		// request.setEndpoint('https://dummyjson.com/user/' + dummyUserId);
-		request.setEndpoint('callout:DummyJsonUser' + '/' + dummyUserId); // Named Credential
+		request.setEndpoint('https://dummyjson.com/users/' + dummyUserId);
+		//request.setEndpoint('callout:DummyJsonUser' + '/' + dummyUserId); // Named Credential
 
 		// Set the HTTP method to GET.
 		request.setMethod('GET');
@@ -57,12 +56,8 @@
             cont = createContactFromJson(response.getBody());
 			cont.DummyJSON_Id__c = dummyUserId;
 		}
-		// My Code
-		upsert cont DummyJSON_Id__c; //insert/update from the JSON response using the external id (dummyUserId)
-
-		// Riley's code
-		// Schema.SObjectField ftoken = Contact.Fields.DummyJSON_Id__c;
-		// Database.upsert(cont, ftoken, AccessLevel.USER_MODE);
+		Schema.SObjectField ftoken = Contact.Fields.DummyJSON_Id__c;
+		Database.upsert(cont, ftoken, AccessLevel.USER_MODE); //insert/update from the JSON response using the external id (dummyUserId)
 	}
 
 	/* 
@@ -83,7 +78,7 @@
 
 	@TestVisible // Allows test class to see this method. Since it is private, it would not be visible otherwise.
 	private static Contact createContactFromJson(String jsonResponse) {
-		
+
 		// Deserialize the JSON string into map of primitive data types.
 		Map<String, Object> jsonMap = (Map<String, Object>) JSON.deserializeUntyped(jsonResponse);
 		
@@ -102,8 +97,8 @@
 		// Set the address fields on the contact.
 		cont.MailingStreet = (String) addressMap.get('address');
 		cont.MailingCity = (String) addressMap.get('city');
-		cont.MailingPostalCode = (String) addressMap.get('postalCode');
 		cont.MailingState = (String) addressMap.get('state');
+		cont.MailingPostalCode = (String) addressMap.get('postalCode');
 		cont.MailingCountry = (String) addressMap.get('country');
 
 		return cont;
@@ -124,13 +119,13 @@
      */
 	
 	public static void postCreateDummyJSONUser(String contactId) {
-		
+
 		// Create HTTP request to send.
 		HttpRequest request = new HttpRequest();
 		
 		// Set the endpoint URL. Use direct URL or for best practices use Named Credential.
-		// request.setEndpoint('https://dummyjson.com/user/add');
-		request.setEndpoint('callout:DummyJsonUser' + '/add'); // Named Credential
+		request.setEndpoint('https://dummyjson.com/users/add');
+		// request.setEndpoint('callout:DummyJsonUser' + '/add'); // Named Credential
 		// request.setHeader('Content-Type', 'application/json'); // Set in Named Credential
 
 		// Set the HTTP method to POST.
@@ -182,7 +177,7 @@
 		}
 		
 		if (cont.Email == null) {
-			cont.Email = 'unknown';
+			cont.Email = 'unknown@unknown.com';
 		}
 		
 		if (cont.Phone == null) {
